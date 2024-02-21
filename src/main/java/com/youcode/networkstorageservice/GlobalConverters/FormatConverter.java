@@ -2,8 +2,10 @@ package com.youcode.networkstorageservice.GlobalConverters;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 //import org.springframework.mock.web.MockMultipartFile;
+import com.youcode.networkstorageservice.Dto.PatientDto;
 import com.youcode.networkstorageservice.GlobalConverters.Templates.MockMultipartFile;
 import com.youcode.networkstorageservice.GlobalConverters.Templates.PatientTemplate;
 import org.springframework.util.LinkedMultiValueMap;
@@ -18,6 +20,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+
+
+
 
 public class FormatConverter {
 
@@ -52,13 +57,16 @@ public class FormatConverter {
     }
 
 ////////////////////////////////////////////////////////////////////
-    public static MultipartFile createJsonMultipartFile(String filename, String jsonRequest) {
-        // Convert JSON request to bytes
-        byte[] jsonBytes = jsonRequest.getBytes();
+private  static ObjectMapper objectMapper = new ObjectMapper();
+
+//objectMapper.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
+    public static MultipartFile createJsonMultipartFile(String filename, PatientDto jsonRequest) throws IOException {
+        // Convert PatientDto object to JSON bytes
+        byte[] jsonBytes = objectMapper.writeValueAsBytes(jsonRequest);
 
         // Create MultiValueMap representing multipart form data
         MultiValueMap<String, Object> multipartFormData = new LinkedMultiValueMap<>();
-        multipartFormData.add("file", new MockMultipartFile(filename, jsonBytes));
+        multipartFormData.add("file", new MockMultipartFile(filename, filename, "application/json", jsonBytes));
 
         // Get the MultipartFile from MultiValueMap
         return (MultipartFile) multipartFormData.getFirst("file");

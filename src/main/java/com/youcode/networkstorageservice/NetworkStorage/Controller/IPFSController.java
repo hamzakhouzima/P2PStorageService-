@@ -5,6 +5,7 @@ package com.youcode.networkstorageservice.NetworkStorage.Controller;
 //import com.youcode.NetworkStorageService.NetworkStorage.Service.MetaDataService;
 import ch.qos.logback.core.pattern.FormattingConverter;
 //import com.youcode.networkstorageservice.GlobalConverters.FormatConverter;
+import com.youcode.networkstorageservice.Dto.PatientDto;
 import com.youcode.networkstorageservice.GlobalConverters.FormatConverter;
 import com.youcode.networkstorageservice.GlobalConverters.Templates.MockMultipartFile;
 import com.youcode.networkstorageservice.GlobalConverters.Templates.PatientTemplate;
@@ -27,6 +28,7 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.net.SocketTimeoutException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -59,9 +61,9 @@ private FileStorageService fileStorageService;
 
 
     @PostMapping(value="/upload")
-    public ResponseEntity<String> uploadFile(@RequestBody String file) {
+    public ResponseEntity<String> uploadFile(@RequestBody PatientDto PatientData)  {
         try {
-            MultipartFile convertedFile = FormatConverter.createJsonMultipartFile("convertedFile" , file);
+            MultipartFile convertedFile = FormatConverter.createJsonMultipartFile("convertedFile" , PatientData);
 
             fileStorageService.uploadFile(convertedFile);
 
@@ -72,10 +74,15 @@ private FileStorageService fileStorageService;
             return ResponseEntity
                     .ok("File uploaded successfully. CID: " + cid);
         } catch (IPFSException e) {
-            logger.error("Error uploading file", e);
+            logger.error("Error uploading file using IPFS: " + e.getMessage(), e);
             return ResponseEntity
                     .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Error uploading file: " + e.getMessage());
+                    .body("An error occurred while uploading the file using IPFS. Please try again later.");
+        } catch (IOException io) {
+            logger.error("Error uploading file: I/O error occurred", io);
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("An I/O error occurred during file upload. Please check your file and try again.");
         }
     }
 
