@@ -1,17 +1,16 @@
 package com.youcode.networkstorageservice.Dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.Setter;
+import lombok.*;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
+@RequiredArgsConstructor
 @Data
-@AllArgsConstructor
 @Component
+@ToString
 public class PatientDto {
 
 //    private String patientId;
@@ -24,8 +23,12 @@ public class PatientDto {
     private Lifestyle lifestyle;
     private ContactInformation contactInformation;
 
+
 //    private Long timestamp;
 
 
 
 }
+
+
+

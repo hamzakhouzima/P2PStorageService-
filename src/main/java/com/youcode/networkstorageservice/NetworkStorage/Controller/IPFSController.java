@@ -64,7 +64,8 @@ private FileStorageService fileStorageService;
     public ResponseEntity<String> uploadFile(@RequestBody PatientDto PatientData)  {
         try {
             MultipartFile convertedFile = FormatConverter.createJsonMultipartFile("convertedFile" , PatientData);
-
+            logger.info(PatientData.toString());
+            System.out.println(PatientData);
             fileStorageService.uploadFile(convertedFile);
 
             String cid = metaDataService.storeMetaData(convertedFile);
@@ -105,15 +106,16 @@ private FileStorageService fileStorageService;
 
         System.out.println(headers.getContentType());
 
-
-//        Path filePath = Paths.get("C:", "Users", "Youcode", "Downloads", hash+".png");
         String fileExtension = getFileExtension(hash);
         Path filePath = Paths.get("C:", "Users", "Youcode", "Downloads", hash + ".json");
-        byte[] bytes = fileStorageService.downloadFile(hash, filePath.toString());
-        return ResponseEntity.status(HttpStatus.OK).headers(headers).body(bytes);
-
+        try {
+            byte[] bytes = fileStorageService.downloadFile(hash, filePath.toString());
+            return ResponseEntity.status(HttpStatus.OK).headers(headers).body(bytes);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(("Error downloading file: " + e.getMessage()).getBytes());
+        }
     }
-
 
     @GetMapping(value = "/isAvailable/{hash}")
     public ResponseEntity<String> isAvailable(@PathVariable("hash") String hash) throws SocketTimeoutException {
