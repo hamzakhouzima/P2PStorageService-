@@ -72,8 +72,8 @@ private FileStorageService fileStorageService;
 
             logger.info("File uploaded successfully. CID: {}", cid);
 
-            return ResponseEntity
-                    .ok("File uploaded successfully. CID: " + cid);
+            return ResponseEntity.ok()
+                    .body("{\"cid\": \"" + cid + "\"}");
         } catch (IPFSException e) {
             logger.error("Error uploading file using IPFS: " + e.getMessage(), e);
             return ResponseEntity
