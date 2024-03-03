@@ -19,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -29,6 +30,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.SocketTimeoutException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -99,23 +101,31 @@ private FileStorageService fileStorageService;
 //        }
 //    }
 
-    @GetMapping(value = "/file/{hash}")
-    public ResponseEntity<byte[]> getFile(@PathVariable("hash") String hash) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("Content-type", MediaType.ALL_VALUE);
 
-        System.out.println(headers.getContentType());
+@GetMapping(value = "/file/{hash}")
+public ResponseEntity<?> getFile(@PathVariable("hash") String hash) {
+    HttpHeaders headers = new HttpHeaders();
+    headers.set("Content-type", MediaType.ALL_VALUE);
 
-        String fileExtension = getFileExtension(hash);
-        Path filePath = Paths.get("C:", "Users", "Youcode", "Downloads", hash + ".json");
-        try {
-            byte[] bytes = fileStorageService.downloadFile(hash, filePath.toString());
-            return ResponseEntity.status(HttpStatus.OK).headers(headers).body(bytes);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(("Error downloading file: " + e.getMessage()).getBytes());
-        }
+    try {
+        // Fetch the file content from IPFS as an input stream
+        InputStream inputStream = fileStorageService.downloadFileAsStream(hash);
+
+        // Wrap the input stream in an InputStreamResource
+        InputStreamResource inputStreamResource = new InputStreamResource(inputStream);
+
+        // Return the input stream resource as the response entity
+        return ResponseEntity.ok()
+                .headers(headers)
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .body(inputStreamResource);
+    } catch (Exception e) {
+        e.printStackTrace();
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(("Error fetching file: " + e.getMessage()));
     }
+}
+
 
     @GetMapping(value = "/isAvailable/{hash}")
     public ResponseEntity<String> isAvailable(@PathVariable("hash") String hash) throws SocketTimeoutException {

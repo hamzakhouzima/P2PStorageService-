@@ -95,20 +95,27 @@ public class FileStorageServiceImpl implements FileStorageService {
 
 
     @Override
-    public byte[] downloadFile(String cid, String downloadPath) {
+    public InputStream downloadFileAsStream(String cid) {
         try {
-            // convert the CID to Multihash
+            // Convert the CID to Multihash
             Multihash filePointer = Multihash.fromBase58(cid);
 
-            byte[] content = ipfsConfig.ipfs.cat(filePointer);
-            Path path = Paths.get(downloadPath);
-            Files.write(path, content);
-            System.out.println("File downloaded successfully to: " + downloadPath);
-        } catch (IpfsFileNotFound | IOException e) {
+            // Get the file content as an input stream
+            InputStream inputStream = new ByteArrayInputStream(ipfsConfig.ipfs.cat(filePointer));
+
+            System.out.println("File content fetched successfully from IPFS.");
+
+            return inputStream;
+        } catch (IpfsFileNotFound e) {
             e.printStackTrace();
+            // Handle the exception accordingly (e.g., throw a custom exception)
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
-        return new byte[0];
+        // Return null if an error occurs
+        return null;
     }
+
 
     @Override
     public boolean isAvailable(String cid) {

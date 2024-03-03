@@ -2,6 +2,7 @@ package com.youcode.networkstorageservice.NetworkStorage.Service;
 
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 
@@ -12,7 +13,7 @@ public interface FileStorageService {
     String UpdateFile(MultipartFile file ,  String ID_number);
 
     // Download file content based on CID
-    byte[] downloadFile(String cid, String downloadPath);
+    InputStream downloadFileAsStream(String cid);
 
 
     // Check availability of a CID on the IPFS network
